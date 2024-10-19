@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+{% block content %}
+<style>
+    :root {
+        --primary-color: #003366;
+        --secondary-color: #00a8ff;
+        --background-color: #121212;
+        --card-background: #1e1e1e;
+        --text-color: #ffffff;
+    }
+    body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+    }
+    .card {
+        background-color: var(--card-background);
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+    .card-header {
+        background-color: var(--primary-color);
+        color: var(--text-color);
+        border-bottom: none;
+        font-weight: bold;
+    }
+    .card-body {
+        padding: 1.5rem;
+    }
+    .btn-primary {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+        transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        transform: scale(1.05);
+    }
+    .price {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--secondary-color);
+    }
+    .trend {
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    .trend-up {
+        color: #2ecc71;
+    }
+    .trend-down {
+        color: #e74c3c;
+    }
+</style>
+
+<h1 class="text-center mb-4">Acheter des Produits</h1>
+
+<div class="row">
+    {% for produit in produits %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{{ produit.nom }}</h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <p class="price" id="prix-{{ produit.nom }}">{{ prix[produit.nom] }} €</p>
+                    <p class="trend" id="tendance-{{ produit.nom }}"></p>
+                </div>
+                <button class="btn btn-primary mt-3" onclick="acheter('{{ produit.nom }}')">
+                    <i class="fas fa-shopping-cart"></i> Acheter
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    function acheter(produit) {
+            const ancienPrix = parseFloat(document.getElementById(`prix-${produit}`).textContent);
+            fetch('/api/acheter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ produit: produit }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Achat réussi!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonColor: '#00a8ff'
+                    });
+                    const nouveauPrix = data.nouveauPrix;
+                    document.getElementById(`prix-${produit}`).textContent = `${nouveauPrix.toFixed(2)} €`;
+                    updateTendance(produit, ancienPrix, nouveauPrix);
+                } else {
+                    Swal.fire({
+                        title: 'Erreur',
+                        text: 'Une erreur est survenue lors de l\'achat.',
+                        icon: 'error',
+                        confirmButtonColor: '#00a8ff'
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error('Erreur:', error);
+                Swal.fire({
+                    title: 'Erreur',
+                    text: 'Une erreur est survenue lors de l\'achat.',
+                    icon: 'error',
+                    confirmButtonColor: '#00a8ff'
+                });
+            });
+        }
+        
+        function updateTendance(produit, ancienPrix, nouveauPrix) {
+            const tendanceElement = document.getElementById(`tendance-${produit}`);
+            
+            if (nouveauPrix > ancienPrix) {
+                tendanceElement.innerHTML = '<i class="fas fa-arrow-up"></i> En hausse';
+                tendanceElement.className = 'trend trend-up';
+            } else if (nouveauPrix < ancienPrix) {
+                tendanceElement.innerHTML = '<i class="fas fa-arrow-down"></i> En baisse';
+                tendanceElement.className = 'trend trend-down';
+            } else {
+                tendanceElement.innerHTML = '<i class="fas fa-equals"></i> Stable';
+                tendanceElement.className = 'trend';
+            }
+        }
+        
+        // Mise à jour des prix en temps réel
+        const socket = io();
+        socket.on('update_price', function(data) {
+            const priceElement = document.getElementById(`prix-${data.produit}`);
+            if (priceElement) {
+                const ancienPrix = parseFloat(priceElement.textContent);
+                const nouveauPrix = data.prix;
+                priceElement.textContent = `${nouveauPrix.toFixed(2)} €`;
+                updateTendance(data.produit, ancienPrix, nouveauPrix);
+            }
+        });
+
+</script>
+{% endblock %}

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs - EDHEC Investment Club Trading Bar</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        body { background-color: #1a202c; color: #e2e8f0; }
+        .chart-container { position: relative; height: 300px; width: 100%; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <header class="bg-gray-800 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">EDHEC Investment Club Trading Bar</h1>
+            <nav>
+                <a href="{{ url_for('index') }}" class="px-3 py-2 rounded hover:bg-gray-700">Accueil</a>
+                <a href="{{ url_for('page_admin') }}" class="px-3 py-2 rounded hover:bg-gray-700">Admin</a>
+                <a href="{{ url_for('logout') }}" class="px-3 py-2 rounded hover:bg-gray-700">Déconnexion</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <h2 class="text-3xl font-bold text-center mb-8">Tableau de Bord des Logs</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-xl font-semibold mb-4">Statistiques</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-blue-900 rounded p-4">
+                        <h4 class="text-sm font-medium text-blue-200">Total Transactions</h4>
+                        <p class="text-2xl font-bold text-blue-400" id="totalTransactions">0</p>
+                    </div>
+                    <div class="bg-green-900 rounded p-4">
+                        <h4 class="text-sm font-medium text-green-200">Utilisateurs Actifs</h4>
+                        <p class="text-2xl font-bold text-green-400" id="activeUsers">0</p>
+                    </div>
+                    <div class="bg-yellow-900 rounded p-4">
+                        <h4 class="text-sm font-medium text-yellow-200">Produit le Plus Vendu</h4>
+                        <p class="text-lg font-bold text-yellow-400" id="topProduct">-</p>
+                    </div>
+                    <div class="bg-purple-900 rounded p-4">
+                        <h4 class="text-sm font-medium text-purple-200">Chiffre d'Affaires</h4>
+                        <p class="text-2xl font-bold text-purple-400" id="totalRevenue">0 €</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-xl font-semibold mb-4">Graphique des Transactions</h3>
+                <div class="chart-container">
+                    <canvas id="transactionChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="col-span-2 bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-xl font-semibold mb-4">Logs en Direct</h3>
+                <div class="mb-4">
+                    <input type="text" id="logFilter" placeholder="Filtrer les logs..." class="w-full p-2 rounded bg-gray-700 text-white">
+                </div>
+                <div id="logs" class="h-96 overflow-y-auto space-y-2"></div>
+            </div>
+            
+            <div class="bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-xl font-semibold mb-4">Utilisateurs Connectés</h3>
+                <div id="users" class="space-y-2"></div>
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <a href="{{ url_for('download_transactions') }}" id="download-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out">
+                Télécharger les transactions (Excel)
+            </a>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 p-4 text-center text-white">
+        <p>&copy; 2024 EDHEC Investment Club Trading Bar. Tous droits réservés.</p>
+    </footer>
+
+    <script>
+        const socket = io();
+        const logsContainer = document.getElementById('logs');
+        const usersContainer = document.getElementById('users');
+        const totalTransactionsElement = document.getElementById('totalTransactions');
+        const activeUsersElement = document.getElementById('activeUsers');
+        const topProductElement = document.getElementById('topProduct');
+        const totalRevenueElement = document.getElementById('totalRevenue');
+        const logFilterInput = document.getElementById('logFilter');
+
+        let transactionChart;
+
+        function initChart() {
+            const ctx = document.getElementById('transactionChart').getContext('2d');
+            transactionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Transactions par minute',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#e2e8f0' }
+                        },
+                        x: {
+                            ticks: { color: '#e2e8f0' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e2e8f0' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart(data) {
+            const minute = moment(data.timestamp).format('HH:mm');
+            if (transactionChart.data.labels.length > 30) {
+                transactionChart.data.labels.shift();
+                transactionChart.data.datasets[0].data.shift();
+            }
+            if (transactionChart.data.labels[transactionChart.data.labels.length - 1] !== minute) {
+                transactionChart.data.labels.push(minute);
+                transactionChart.data.datasets[0].data.push(1);
+            } else {
+                transactionChart.data.datasets[0].data[transactionChart.data.datasets[0].data.length - 1]++;
+            }
+            transactionChart.update();
+        }
+
+        function addLog(data) {
+            const logElement = document.createElement('div');
+            logElement.className = 'bg-gray-700 rounded p-2 text-sm';
+            logElement.innerHTML = `
+                <span class="text-gray-400">${moment(data.timestamp).format('HH:mm:ss')}</span> - ${data.message}
+            `;
+            logsContainer.insertBefore(logElement, logsContainer.firstChild);
+            if (logsContainer.children.length > 100) {
+                logsContainer.removeChild(logsContainer.lastChild);
+            }
+        }
+
+        socket.on('connect', function() {
+            console.log('Connected to server');
+            addLog({timestamp: new Date(), message: 'Connecté au serveur'});
+        });
+
+        socket.on('disconnect', function() {
+            console.log('Disconnected from server');
+            addLog({timestamp: new Date(), message: 'Déconnecté du serveur'});
+        });
+
+        socket.on('update_stats', function(data) {
+            totalTransactionsElement.textContent = data.total_transactions;
+            activeUsersElement.textContent = data.active_users;
+            topProductElement.textContent = data.top_product;
+            totalRevenueElement.textContent = data.total_revenue.toFixed(2) + ' €';
+        });
+
+        socket.on('new_transaction', function(data) {
+            addLog(data);
+            updateChart(data);
+        });
+
+        socket.on('update_users', function(data) {
+            usersContainer.innerHTML = '';
+            data.users.forEach(username => {
+                const userElement = document.createElement('div');
+                userElement.className = 'bg-gray-700 rounded px-3 py-2 text-sm';
+                userElement.textContent = username;
+                usersContainer.appendChild(userElement);
+            });
+            activeUsersElement.textContent = data.users.length;
+        });
+
+        logFilterInput.addEventListener('input', function() {
+            const filterValue = this.value.toLowerCase();
+            Array.from(logsContainer.children).forEach(log => {
+                const logText = log.textContent.toLowerCase();
+                log.style.display = logText.includes(filterValue) ? '' : 'none';
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initChart();
+            socket.emit('request_initial_data');
+        });
+    </script>
+</body>
+</html>

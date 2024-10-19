@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block title %}Services en cours - EDHEC Investment Club Trading Bar{% endblock %}
+
+{% block extra_head %}
+<style>
+    .service {
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    .service-name {
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+    .status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 3px;
+        color: white;
+        font-weight: bold;
+    }
+    .status-ok {
+        background-color: #2ecc71;
+    }
+    .status-warning {
+        background-color: #f39c12;
+    }
+    .status-error {
+        background-color: #e74c3c;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Services en cours</h1>
+
+<div id="services-container"></div>
+
+<script>
+    function updateServices() {
+        fetch('/api/services_status')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('services-container');
+            container.innerHTML = '';
+            data.forEach(service => {
+                const serviceDiv = document.createElement('div');
+                serviceDiv.className = 'service';
+                serviceDiv.innerHTML = `
+                    <div class="service-name">${service.name}</div>
+                    <div class="status ${service.status}">${service.status.toUpperCase()}</div>
+                    <div>Latence: ${service.latency}ms</div>
+                    <div>Erreurs: ${service.errors}</div>
+                `;
+                container.appendChild(serviceDiv);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Mettre à jour le statut des services toutes les 5 secondes
+    setInterval(updateServices, 5000);
+    updateServices(); // Appel initial
+</script>
+{% endblock %}

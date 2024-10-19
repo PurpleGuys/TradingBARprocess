@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDHEC Trading Bar - Prix en Temps Réel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0f172a;
+            --secondary-color: #1e293b;
+            --accent-color: #38bdf8;
+            --text-color: #e2e8f0;
+            --success-color: #4ade80;
+            --danger-color: #f87171;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            font-size: 16px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background-color: var(--secondary-color);
+            color: var(--accent-color);
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 20px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, var(--accent-color), #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .ticker {
+            font-size: 1.4rem;
+            white-space: nowrap;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        .ticker-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: ticker 30s linear infinite;
+        }
+
+        @keyframes ticker {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+
+        .sidebar {
+            background-color: var(--secondary-color);
+            padding: 2rem;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .ranking, .total-spent-container {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .ranking-title, .total-spent-container h2 {
+            font-size: 2.2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: var(--accent-color);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        #rankingList {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .ranking-medal {
+            font-size: 2.5rem;
+            margin-right: 1.5rem;
+        }
+
+        .ranking-product {
+            flex-grow: 1;
+            font-weight: 600;
+            font-size: 1.6rem;
+        }
+
+        .ranking-sales {
+            font-weight: bold;
+            color: var(--accent-color);
+            font-size: 1.6rem;
+        }
+
+        .total-spent {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 2rem;
+            overflow: hidden;
+        }
+
+        .prices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .price-card {
+            background-color: var(--secondary-color);
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .price-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .product-name {
+            font-size: 2.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+            text-align: center;
+        }
+
+        .product-price {
+            font-size: 3.2rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .price-change {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .up { 
+            color: var(--success-color);
+            background-color: rgba(74, 222, 128, 0.2);
+        }
+        .down { 
+            color: var(--danger-color);
+            background-color: rgba(248, 113, 113, 0.2);
+        }
+
+        .sales {
+            font-size: 1.6rem;
+            margin-top: 1rem;
+            color: var(--text-color);
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 100%;
+            background-color: var(--secondary-color);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        #crashMessage {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--danger-color);
+            color: var(--text-color);
+            padding: 3rem;
+            font-size: 4rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            font-weight: 700;
+            animation: crashAnimation 0.5s infinite alternate;
+        }
+
+        @keyframes crashAnimation {
+            from { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            to { transform: translate(-50%, -50%) scale(1.1) rotate(5deg); }
+        }
+
+        .price-change {
+            animation: priceChange 0.5s ease-in-out;
+        }
+
+        @keyframes priceChange {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                order: 2;
+            }
+
+            .main-content {
+                order: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .ticker {
+                font-size: 1.2rem;
+            }
+
+            .prices-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-glass-cheers"></i> EDHEC Trading Bar</h1>
+            <div class="ticker">
+                <div class="ticker-content">Profitez de nos promotions spéciales sur les boissons ! | Happy Hour de 18h à 20h ! | </div>
+            </div>
+        </header>
+        <aside class="sidebar">
+            <div class="ranking">
+                <h2 class="ranking-title"><i class="fas fa-trophy"></i> Top Ventes</h2>
+                <div id="rankingList">
+                    <!-- Le classement sera injecté ici -->
+                </div>
+            </div>
+            <div class="total-spent-container">
+                <h2>Total Dépensé ce Soir</h2>
+                <div class="total-spent">
+                    <span id="totalSpentValue">0.00</span> €
+                </div>
+            </div>
+        </aside>
+        <main class="main-content">
+            <div class="prices-grid" id="pricesGrid">
+                <!-- Les cartes de prix seront injectées ici -->
+            </div>
+            <div class="chart-container">
+                <div id="chartContainer"></div>
+            </div>
+        </main>
+    </div>
+    <div id="crashMessage"><i class="fas fa-exclamation-triangle"></i> CRASH BOURSIER</div>
+
+    <script>
+        const socket = io();
+        let chart;
+        let currentPrices = {};
+        let currentVentes = {};
+        let currentTotalSpent = 0;
+        let targetTotalSpent = 0;
+        let animationFrameId = null;
+
+        const colors = {
+            'Bière': '#FF6384',
+            'Bière 8c': '#36A2EB',
+            'Whisky': '#FFCE56',
+            'Jager': '#4BC0C0',
+            'Ricard': '#9966FF',
+            'Vodka': '#FF9F40'
+        };
+
+        function initializeChart() {
+            const options = {
+                series: [],
+                chart: {
+                    type: 'line',
+                    height: '100%',
+                    animations: {
+                        enabled: true,
+                        easing: 'linear',
+                        dynamicAnimation: {
+                            speed: 500
+                        }
+                    },
+                    toolbar: {
+                        show: false
+                    },
+                    zoom: {
+                        enabled: false
+                    },
+                    background: 'transparent'
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                colors: Object.values(colors),
+                xaxis: {
+                    type: 'datetime',
+                    labels: {
+                        style: {
+                            colors: '#e2e8f0',
+                            fontSize: '14px'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function (val) {
+                            return val.toFixed(2) + "€";
+                        },
+                        style: {
+                            colors: '#e2e8f0',
+                            fontSize: '14px'
+                        }
+                    }
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'left',
+                    fontSize: '14px',
+                    labels: {
+                        colors: '#e2e8f0'
+                    }
+                },
+                tooltip: {
+                    x: {
+                        format: 'dd MMM yyyy HH:mm:ss'
+                    },
+                    style: {
+                        fontSize: '14px'
+                    }
+                },
+                grid: {
+                    borderColor: '#334155',
+                    xaxis: {
+                        lines: {
+                            show: true
+                        }
+                    }
+                },
+                theme: {
+                    mode: 'dark'
+                }
+            };
+
+            chart = new ApexCharts(document.querySelector("#chartContainer"), options);
+            chart.render();
+        }
+
+        function updateChart(data) {
+            if (!data || Object.keys(data).length === 0) {
+                console.error("Aucune donnée pour le graphique.");
+                return;
+            }
+
+            const series = Object.entries(data).map(([produit, points]) => ({
+                name: produit,
+                data: points.map(([time, price]) => ({
+                    x: new Date(time * 1000),
+                    y: parseFloat(price)
+                }))
+            }));
+
+            chart.updateSeries(series, true);
+        }
+
+        function updatePricesGrid(prices, ventes) {
+            const grid = document.getElementById('pricesGrid');
+            grid.innerHTML = '';
+            Object.entries(prices).forEach(([produit, price]) => {
+                const previousPrice = currentPrices[produit] || price;
+                const priceChange = price - previousPrice;
+                const changeClass = priceChange > 0 ? 'up' : priceChange < 0 ? 'down' : '';
+                const changeIcon = priceChange > 0 ? '↑' : priceChange < 0 ? '↓' : '→';
+                
+                const card = document.createElement('div');
+                card.className = 'price-card';
+                card.innerHTML = `
+                    <h3 class="product-name">${produit}</h3>
+                    <div class="product-price">${price.toFixed(2)}€</div>
+                    <div class="price-change ${changeClass}">
+                        ${changeIcon} ${Math.abs(priceChange).toFixed(2)}€
+                    </div>
+                    <div class="sales">Ventes: ${ventes[produit] || 0}</div>
+                `;
+                grid.appendChild(card);
+                
+                currentPrices[produit] = price;
+                currentVentes[produit] = ventes[produit] || 0;
+            });
+        }
+
+        function updateRanking(ventes) {
+            const rankingList = document.getElementById('rankingList');
+            const sortedVentes = Object.entries(ventes).sort((a, b) => b[1] - a[1]);
+            const medals = ['🥇', '🥈', '🥉'];
+            
+            rankingList.innerHTML = sortedVentes.slice(0, 3).map(([produit, vente], index) => `
+                <div class="ranking-item">
+                    <span class="ranking-medal">${medals[index]}</span>
+                    <span class="ranking-product">${produit}</span>
+                    <span class="ranking-sales">${vente}</span>
+                </div>
+            `).join('');
+        }
+
+        function triggerCrash() {
+            const crashMessage = document.getElementById('crashMessage');
+            crashMessage.style.display = 'block';
+            setTimeout(() => {
+                crashMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function updateTotalSpent() {
+            fetch('/api/total_spent')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur serveur');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.total_spent !== undefined && data.total_spent !== null) {
+                    targetTotalSpent = parseFloat(data.total_spent);
+                    if (!animationFrameId) {
+                        animateTotalSpent();
+                    }
+                } else {
+                    console.error('Total dépensé non défini ou invalide');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération du total:', error);
+            });
+        }
+
+        function animateTotalSpent() {
+            const totalSpentElement = document.getElementById('totalSpentValue');
+            const diff = targetTotalSpent - currentTotalSpent;
+            const step = diff / 10;
+
+            if (Math.abs(diff) < 0.01) {
+                currentTotalSpent = targetTotalSpent;
+                totalSpentElement.textContent = currentTotalSpent.toFixed(2);
+                animationFrameId = null;
+                return;
+            }
+
+            currentTotalSpent += step;
+            totalSpentElement.textContent = currentTotalSpent.toFixed(2);
+
+            animationFrameId = requestAnimationFrame(animateTotalSpent);
+        }
+
+        socket.on('connect', () => console.log('Websocket connecté!'));
+
+        socket.on('update_prices', data => {
+            requestAnimationFrame(() => {
+                updateChart(data.historique);
+                updatePricesGrid(data.prix, data.ventes);
+                updateRanking(data.ventes);
+            });
+        });
+
+        socket.on('crash_boursier', triggerCrash);
+
+        let lastFetchTime = 0;
+        const FETCH_INTERVAL = 5000; // 5 secondes
+
+        function fetchData() {
+            const now = Date.now();
+            if (now - lastFetchTime < FETCH_INTERVAL) {
+                return;
+            }
+            lastFetchTime = now;
+
+            Promise.all([
+                fetch('/api/historique_prix').then(res => res.json()),
+                fetch('/api/prix').then(res => res.json()),
+                fetch('/api/ventes').then(res => res.json())
+            ]).then(([historiqueData, prixData, ventesData]) => {
+                requestAnimationFrame(() => {
+                    updateChart(historiqueData);
+                    updatePricesGrid(prixData, ventesData);
+                    updateRanking(ventesData);
+                });
+            }).catch(error => console.error('Erreur de récupération des données:', error));
+        }
+
+        function resizeChart() {
+            if (chart) {
+                chart.updateOptions({
+                    chart: {
+                        height: '100%'
+                    }
+                });
+            }
+        }
+
+        // Initialisation
+        initializeChart();
+        fetchData();
+        updateTotalSpent();
+
+        // Optimisation des mises à jour
+        function update() {
+            fetchData();
+            updateTotalSpent();
+            requestAnimationFrame(update);
+        }
+
+        // Démarrage de la boucle d'animation
+        requestAnimationFrame(update);
+
+        // Gestion du redimensionnement
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(resizeChart, 250);
+        });
+
+        // Gestion de la visibilité de la page
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                fetchData();
+                updateTotalSpent();
+            }
+        });
+    </script>
+</body>
+</html>

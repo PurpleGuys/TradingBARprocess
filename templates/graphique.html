@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+
+{% block title %}Graphiques - EDHEC Investment Club Trading Bar{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<style>
+    .chart-container {
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Graphiques des prix</h1>
+
+<div id="chart-container"></div>
+
+<script>
+    let charts = {};
+
+    function createChart(productName, data) {
+        const chartOptions = {
+            series: [{
+                name: 'Prix',
+                data: data
+            }],
+            chart: {
+                type: 'candlestick',
+                height: 350,
+                background: 'transparent',
+                foreColor: '#e0e0e0'
+            },
+            title: {
+                text: `Prix de ${productName}`,
+                align: 'left',
+                style: {
+                    color: '#e0e0e0'
+                }
+            },
+            xaxis: {
+                type: 'datetime'
+            },
+            yaxis: {
+                tooltip: {
+                    enabled: true
+                }
+            },
+            theme: {
+                mode: 'dark'
+            }
+        };
+
+        const chartDiv = document.createElement('div');
+        chartDiv.id = `chart-${productName}`;
+        chartDiv.className = 'chart-container';
+        document.getElementById('chart-container').appendChild(chartDiv);
+
+        charts[productName] = new ApexCharts(document.querySelector(`#chart-${productName}`), chartOptions);
+        charts[productName].render();
+    }
+
+    function updateCharts() {
+        fetch('/api/historique_prix')
+        .then(response => response.json())
+        .then(data => {
+            for (const [productName, priceHistory] of Object.entries(data)) {
+                const chartData = priceHistory.map(([timestamp, price]) => {
+                    const date = new Date(timestamp * 1000);
+                    return {
+                        x: date,
+                        y: [price, price, price, price] // Ouverture, Haut, Bas, Fermeture
+                    };
+                });
+
+                if (charts[productName]) {
+                    charts[productName].updateSeries([{
+                        data: chartData
+                    }]);
+                } else {
+                    createChart(productName, chartData);
+                }
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Mettre à jour les graphiques toutes les 5 secondes
+    setInterval(updateCharts, 5000);
+    updateCharts(); // Appel initial
+</script>
+{% endblock %}

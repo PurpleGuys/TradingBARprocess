@@ -1,0 +1,89 @@
+/* /
+# _______  _____             _____   _____  _   _   _____      ____             _____
+#|__   __||  __ \     /\    |  __ \ |_   _|| \ | | / ____|    |  _ \     /\    |  __ \
+#   | |   | |__) |   /  \   | |  | |  | |  |  \| || |  __     | |_) |   /  \   | |__) |
+#   | |   |  _  /   / /\ \  | |  | |  | |  | . ` || | |_ |    |  _ <   / /\ \  |  _  /
+#   | |   | | \ \  / ____ \ | |__| | _| |_ | |\  || |__| |    | |_) | / ____ \ | | \ \
+#   |_|   |_|  \_\/_/    \_\|_____/ |_____||_| \_| \_____|    |____/ /_/    \_\|_|  \_\
+# 
+# Copyright (c) 2023 Ethan Petrović
+#
+# All rights reserved.
+#
+# This code is licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+# http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License. */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+}
+
+header {
+    background: #50b3a2;
+    color: white;
+    padding-top: 30px;
+    min-height: 70px;
+    border-bottom: #e8491d 3px solid;
+}
+
+header a {
+    color: #ffffff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 16px;
+}
+
+header ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    overflow: hidden;
+}
+
+header li {
+    float: left;
+    display: inline;
+    padding: 0 20px 0 20px;
+}
+
+header #branding {
+    float: left;
+}
+
+header #branding h1 {
+    margin: 0;
+}
+
+header nav {
+    float: right;
+    margin-top: 10px;
+}
+
+header .highlight, header .current a {
+    color: #e8491d;
+    font-weight: bold;
+}
+
+header a:hover {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+

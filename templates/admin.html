@@ -1,0 +1,577 @@
+{% extends "layout.html" %}
+{% block content %}
+<style>
+    :root {
+        --primary-color: #003366;
+        --secondary-color: #00a8ff;
+        --background-color: #121212;
+        --card-background: #1e1e1e;
+        --text-color: #ffffff;
+        --success-color: #2ecc71;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+    }
+    body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+    }
+    .card {
+        background-color: var(--card-background);
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    .card-header {
+        background-color: var(--primary-color);
+        color: var(--text-color);
+        border-bottom: none;
+        font-weight: bold;
+    }
+    .btn-primary {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+    .btn-warning {
+        background-color: var(--warning-color);
+        border-color: var(--warning-color);
+    }
+    .btn-danger {
+        background-color: var(--danger-color);
+        border-color: var(--danger-color);
+    }
+    .table {
+        color: var(--text-color);
+    }
+    .table thead th {
+        border-bottom: 2px solid var(--secondary-color);
+    }
+    .form-control {
+        background-color: #2c2c2c;
+        border-color: #444;
+        color: var(--text-color);
+    }
+    .form-control:focus {
+        background-color: #3a3a3a;
+        border-color: var(--secondary-color);
+        color: var(--text-color);
+    }
+</style>
+
+<h1 class="text-center mb-4">Administration - EDHEC Trading Bar</h1>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Gestion des Utilisateurs</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Nom d'utilisateur</th>
+                    <th>Rôle</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <!-- Les utilisateurs seront ajoutés ici dynamiquement -->
+            </tbody>
+        </table>
+        <button class="btn btn-primary" onclick="openModal('addUserModal')">Ajouter un utilisateur</button>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Gestion des Produits</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prix Minimum</th>
+                    <th>Prix Maximum</th>
+                    <th>Prix Actuel</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="productTableBody">
+                <!-- Les produits seront ajoutés ici dynamiquement -->
+            </tbody>
+        </table>
+        <button class="btn btn-primary" onclick="openModal('addProductModal')">Ajouter un produit</button>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Contrôle du Marché</h5>
+    </div>
+    <div class="card-body">
+        <button id="crashButton" class="btn btn-danger">Déclencher un krach boursier</button>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Jeu Concours</h5>
+    </div>
+    <div class="card-body">
+        <button id="select-winner" class="btn btn-primary">Sélectionner le gagnant</button>
+        <div id="winner-result" class="mt-3"></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Réinitialisation de la Base de Données</h5>
+    </div>
+    <div class="card-body">
+        <button id="resetDbButton" class="btn btn-warning">Réinitialiser participants et ventes</button>
+    </div>
+</div>
+
+<!-- Modal pour ajouter un utilisateur -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un utilisateur</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Rôle</label>
+                        <select class="form-control" id="role">
+                            <option value="user">Utilisateur</option>
+                            <option value="admin">Administrateur</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour ajouter un produit -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un produit</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addProductForm">
+                    <div class="mb-3">
+                        <label for="productName" class="form-label">Nom du produit</label>
+                        <input type="text" class="form-control" id="productName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productPriceMin" class="form-label">Prix Minimum</label>
+                        <input type="number" class="form-control" id="productPriceMin" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productPriceMax" class="form-label">Prix Maximum</label>
+                        <input type="number" class="form-control" id="productPriceMax" step="0.01" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+// Fonction pour charger les utilisateurs
+function loadUsers() {
+    fetch('/api/users')
+        .then(response => response.json())
+        .then(users => {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+            users.forEach(user => {
+                const row = `
+                    <tr>
+                        <td>${user.username}</td>
+                        <td>${user.role}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editUser('${user.username}')">Modifier</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.username}')">Supprimer</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        })
+        .catch(error => console.error('Erreur:', error));
+}
+
+// Fonction pour charger les produits
+function loadProducts() {
+    fetch('/api/products')
+        .then(response => response.json())
+        .then(products => {
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = '';
+            products.forEach(product => {
+                const row = `
+                    <tr>
+                        <td>${product.nom}</td>
+                        <td>${product.prix_min}</td>
+                        <td>${product.prix_max}</td>
+                        <td>${product.prix_actuel}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editProduct('${product.nom}')">Modifier</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteProduct('${product.nom}')">Supprimer</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        })
+        .catch(error => console.error('Erreur:', error));
+}
+
+// Fonction pour ouvrir une modal
+function openModal(modalId) {
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
+    modal.show();
+}
+
+// Fonction pour ajouter un utilisateur
+document.getElementById('addUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const userData = {
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value,
+        role: document.getElementById('role').value
+    };
+    
+    fetch('/api/create_user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire('Succès', 'Utilisateur ajouté avec succès', 'success');
+            loadUsers();
+            bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+        } else {
+            Swal.fire('Erreur', data.message || 'Erreur lors de l\'ajout de l\'utilisateur', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        Swal.fire('Erreur', 'Une erreur est survenue', 'error');
+    });
+});
+
+// Fonction pour modifier un utilisateur
+function editUser(username) {
+    Swal.fire({
+        title: 'Modifier le rôle',
+        input: 'select',
+        inputOptions: {
+            'user': 'Utilisateur',
+            'admin': 'Administrateur'
+        },
+        inputPlaceholder: 'Sélectionnez un rôle',
+        showCancelButton: true,
+        confirmButtonText: 'Modifier',
+        cancelButtonText: 'Annuler',
+        showLoaderOnConfirm: true,
+        preConfirm: (role) => {
+            return fetch('/api/update_user_role', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, newRole: role })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'Erreur lors de la modification du rôle')
+                }
+                return data;
+            })
+            .catch(error => {
+                Swal.showValidationMessage(`Erreur: ${error.message}`);
+            });
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire('Succès', 'Rôle modifié avec succès', 'success');
+            loadUsers();
+        }
+    });
+}
+
+// Fonction pour supprimer un utilisateur
+function deleteUser(username) {
+    Swal.fire({
+        title: 'Êtes-vous sûr?',
+        text: `Voulez-vous vraiment supprimer l'utilisateur ${username} ?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Oui, supprimer!',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/api/delete_user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Supprimé!', 'L\'utilisateur a été supprimé.', 'success');
+                    loadUsers();
+                } else {
+                    Swal.fire('Erreur', data.message || 'Erreur lors de la suppression', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                Swal.fire('Erreur', 'Une erreur est survenue', 'error');
+            });
+        }
+    });
+}
+
+// Fonction pour ajouter un produit
+document.getElementById('addProductForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const productData = {
+        nom: document.getElementById('productName').value,
+        minPrice: document.getElementById('productPriceMin').value,
+        maxPrice: document.getElementById('productPriceMax').value
+    };
+    
+    fetch('/api/ajouter_produit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire('Succès', 'Produit ajouté avec succès', 'success');
+            loadProducts();
+            bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
+        } else {
+            Swal.fire('Erreur', data.message || 'Erreur lors de l\'ajout du produit', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        Swal.fire('Erreur', 'Une erreur est survenue', 'error');
+    });
+});
+
+// Fonction pour modifier un produit
+function editProduct(productName) {
+    fetch(`/api/product/${productName}`)
+        .then(response => response.json())
+        .then(product => {
+            Swal.fire({
+                title: 'Modifier le produit',
+                html:
+                    `<input id="swal-input1" class="swal2-input" value="${product.nom}" placeholder="Nom du produit">` +
+                    `<input id="swal-input2" class="swal2-input" value="${product.prix_min}" placeholder="Prix minimum">` +
+                    `<input id="swal-input3" class="swal2-input" value="${product.prix_max}" placeholder="Prix maximum">`,
+                focusConfirm: false,
+                preConfirm: () => {
+                    return {
+                        nom: document.getElementById('swal-input1').value,
+                        prix_min: document.getElementById('swal-input2').value,
+                        prix_max: document.getElementById('swal-input3').value
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/api/update_product', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            oldName: productName,
+                            newName: result.value.nom,
+                            minPrice: result.value.prix_min,
+                            maxPrice: result.value.prix_max
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Succès', 'Produit modifié avec succès', 'success');
+                            loadProducts();
+                        } else {
+                            Swal.fire('Erreur', data.message || 'Erreur lors de la modification du produit', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        Swal.fire('Erreur', 'Une erreur est survenue', 'error');
+                    });
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            Swal.fire('Erreur', 'Une erreur est survenue lors de la récupération des données du produit', 'error');
+        });
+}
+
+// Fonction pour supprimer un produit
+function deleteProduct(productName) {
+    Swal.fire({
+        title: 'Êtes-vous sûr?',
+        text: `Voulez-vous vraiment supprimer le produit ${productName} ?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Oui, supprimer!',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/api/supprimer_produit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nom: productName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Supprimé!', 'Le produit a été supprimé.', 'success');
+                    loadProducts();
+                } else {
+                    Swal.fire('Erreur', data.message || 'Erreur lors de la suppression', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                Swal.fire('Erreur', 'Une erreur est survenue', 'error');
+            });
+        }
+    });
+}
+
+// Fonction pour déclencher un krach boursier
+document.getElementById('crashButton').addEventListener('click', function() {
+    Swal.fire({
+        title: 'Attention!',
+        text: "Êtes-vous sûr de vouloir déclencher un krach boursier ? Cette action réinitialisera tous les prix à leur minimum.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Oui, déclencher le krach!',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/api/trigger_crash', {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Krach déclenché!', 'Tous les prix ont été réinitialisés.', 'success');
+                    loadProducts();
+                } else {
+                    Swal.fire('Erreur', data.message || 'Erreur lors du déclenchement du krach', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                Swal.fire('Erreur', 'Une erreur est survenue', 'error');
+            });
+        }
+    });
+});
+
+// Fonction pour sélectionner le gagnant du jeu concours
+document.getElementById('select-winner').addEventListener('click', function() {
+    fetch('/admin/select-winner', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const winnerInfo = `
+                    <p><strong>Nom :</strong> ${data.winner.nom} ${data.winner.prenom}</p>
+                    <p><strong>Email :</strong> ${data.winner.email}</p>
+                    <p><strong>Estimation :</strong> ${data.winner.guess}€</p>
+                    <p><strong>Total réel dépensé :</strong> ${data.total_spent}€</p>
+                `;
+                document.getElementById('winner-result').innerHTML = winnerInfo;
+                Swal.fire('Gagnant sélectionné!', 'Le gagnant du jeu concours a été déterminé.', 'success');
+            } else {
+                Swal.fire('Erreur', data.message || 'Aucun gagnant n\'a pu être déterminé', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            Swal.fire('Erreur', 'Une erreur est survenue lors de la sélection du gagnant', 'error');
+        });
+});
+
+// Fonction pour réinitialiser la base de données
+document.getElementById('resetDbButton').addEventListener('click', function() {
+    Swal.fire({
+        title: 'Attention!',
+        text: "Vous êtes sur le point de réinitialiser les participants et les ventes. Cette action est irréversible. Êtes-vous sûr de vouloir continuer?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Oui, réinitialiser!',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/api/reset_database', {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Réinitialisé!', 'La base de données a été réinitialisée avec succès.', 'success');
+                    loadProducts();
+                } else {
+                    Swal.fire('Erreur', data.message || 'Une erreur est survenue lors de la réinitialisation', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                Swal.fire('Erreur', 'Une erreur est survenue', 'error');
+            });
+        }
+    });
+});
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    loadUsers();
+    loadProducts();
+});
+</script>
+{% endblock %}

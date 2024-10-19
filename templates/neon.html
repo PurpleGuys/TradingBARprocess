@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDHEC Trading Bar - Prix en Temps Réel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0a0e17;
+            --secondary-color: #1a2130;
+            --accent-color: #00ffff;
+            --text-color: #ffffff;
+            --success-color: #00ff00;
+            --danger-color: #ff0000;
+            --warning-color: #ffff00;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            font-family: 'Orbitron', sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            font-size: 16px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+            gap: 1rem;
+            padding: 1rem;
+            transition: all 0.5s ease;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background-color: var(--secondary-color);
+            color: var(--accent-color);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(0, 255, 255, 0.1) 0%,
+                rgba(0, 255, 255, 0.05) 25%,
+                transparent 50%
+            );
+            animation: shimmer 5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, var(--accent-color), #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 5px rgba(0, 255, 255, 0.5); }
+            to { text-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.6); }
+        }
+
+        .ticker {
+            font-size: 1.2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            color: var(--text-color);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .ticker-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: ticker 30s linear infinite;
+        }
+
+        @keyframes ticker {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+
+        .sidebar {
+            background-color: var(--secondary-color);
+            padding: 1.5rem;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            transition: all 0.5s ease;
+        }
+
+        .ranking, .total-spent-container {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.1) inset;
+        }
+
+        .ranking-title, .total-spent-container h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: var(--accent-color);
+            font-weight: 700;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        #rankingList {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            animation: pulseRanking 2s infinite alternate;
+        }
+
+        @keyframes pulseRanking {
+            from { transform: scale(1); box-shadow: 0 0 5px rgba(0, 255, 255, 0.3); }
+            to { transform: scale(1.05); box-shadow: 0 0 15px rgba(0, 255, 255, 0.5); }
+        }
+
+        .ranking-medal {
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+
+        .ranking-product {
+            flex-grow: 1;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .ranking-sales {
+            font-weight: bold;
+            color: var(--accent-color);
+            font-size: 1.2rem;
+        }
+
+        .total-spent {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-align: center;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 1.5rem;
+            overflow: hidden;
+        }
+
+        .prices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        .price-card {
+            background-color: var(--secondary-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .price-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(0, 255, 255, 0.1) 0%,
+                rgba(0, 255, 255, 0.05) 25%,
+                transparent 50%
+            );
+            animation: shimmer 5s infinite linear;
+        }
+
+        .price-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 255, 255, 0.3);
+        }
+
+        .product-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .product-price {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--text-color);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+        }
+
+        .price-change {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .up { color: var(--success-color); text-shadow: 0 0 10px rgba(0, 255, 0, 0.7); }
+        .down { color: var(--danger-color); text-shadow: 0 0 10px rgba(255, 0, 0, 0.7); }
+
+        .chart-container {
+            width: 100%;
+            height: 100%;
+            background-color: var(--secondary-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        #crashMessage {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--danger-color);
+            color: var(--text-color);
+            padding: 2rem;
+            font-size: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.5);
+            z-index: 1000;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .price-change {
+            animation: priceChange 0.5s ease-in-out;
+        }
+
+        @keyframes priceChange {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                order: 2;
+            }
+
+            .main-content {
+                order: 1;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .ticker {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+                margin-bottom: 1rem;
+            }
+
+            .ticker {
+                width: 100%;
+            }
+
+            .prices-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .ranking-title, .total-spent-container h2 {
+                font-size: 1.5rem;
+            }
+
+            .product-name {
+                font-size: 1.5rem;
+            }
+
+            .product-price {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-glass-cheers"></i> EDHEC Trading Bar</h1>
+            <div class="ticker">
+                <div class="ticker-content">Profitez de nos promotions spéciales sur les boissons ! | Happy Hour de 18h à 20h ! | Nouvelle bière artisanale disponible ! |</div>
+            </div>
+        </header>
+        <aside class="sidebar">
+            <div class="ranking">
+                <h2 class="ranking-title"><i class="fas fa-trophy"></i> Top Ventes</h2>
+                <div id="rankingList">
+                    <!-- Le classement sera injecté ici -->
+                </div>
+            </div>
+            <div class="total-spent-container">
+                <h2>Total Dépensé ce Soir</h2>
+                <div class="total-spent">
+                    <span id="totalSpentValue">0.00</span> €
+                </div>
+            </div>
+        </aside>
+        <main class="main-content">
+            <div class="prices-grid" id="pricesGrid">
+                <!-- Les cartes de prix seront injectées ici -->
+            </div>
+            <div class="chart-container">
+                <div id="chartContainer"></div>
+            </div>
+        </main>
+    </div>
+    <div id="crashMessage"><i class="fas fa-exclamation-triangle"></i> CRASH BOURSIER</div>
+
+    <script>
+        const socket = io();
+        let chart;
+        let currentPrices = {};
+        let currentVentes = {};
+        let currentTotalSpent = 0;
+        let targetTotalSpent = 0;
+        let animationFrameId = null;
+
+        const colors = {
+            'Bière': '#FF6384',
+            'Bière 8c': '#36A2EB',
+            'Whisky': '#FFCE56',
+            'Jager': '#4BC0C0',
+            'Ricard': '#9966FF',
+            'Vodka': '#FF9F40'
+        };
+
+        function initializeChart() {
+            const options = {
+                series: [],
+                chart: {
+                    type: 'line',
+                    height: '100%',
+                    animations: {
+                        enabled: true,
+                        easing: 'linear',
+                        dynamicAnimation: {
+                            speed: 500
+                        }
+                    },
+                    toolbar: {
+                        show: false
+                    },
+                    zoom: {
+                        enabled: false
+                    },
+                    background: 'transparent'
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                colors: Object.values(colors),
+                xaxis: {
+                    type: 'datetime',
+                    labels: {
+                        style: {
+                            colors: '#e2e8f0',
+                            fontSize: '14px'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function (val) {
+                            return val.toFixed(2) + "€";
+                        },
+                        style: {
+                            colors: '#e2e8f0',
+                            fontSize: '14px'
+                        }
+                    }
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'left',
+                    fontSize: '14px',
+                    labels: {
+                        colors: '#e2e8f0'
+                    }
+                },
+                tooltip: {
+                    x: {
+                        format: 'dd MMM yyyy HH:mm:ss'
+                    },
+                    style: {
+                        fontSize: '14px'
+                    }
+                },
+                grid: {
+                    borderColor: '#334155',
+                    xaxis: {
+                        lines: {
+                            show: true
+                        }
+                    }
+                },
+                theme: {
+                    mode: 'dark'
+                }
+            };
+
+            chart = new ApexCharts(document.querySelector("#chartContainer"), options);
+            chart.render();
+        }
+
+        function updateChart(data) {
+            if (!data || Object.keys(data).length === 0) {
+                console.error("Aucune donnée pour le graphique.");
+                return;
+            }
+
+            const series = Object.entries(data).map(([produit, points]) => ({
+                name: produit,
+                data: points.map(([time, price]) => ({
+                    x: new Date(time * 1000),
+                    y: parseFloat(price)
+                }))
+            }));
+
+            chart.updateSeries(series, true);
+        }
+
+        function updatePricesGrid(prices, ventes) {
+            const grid = document.getElementById('pricesGrid');
+            grid.innerHTML = '';
+            Object.entries(prices).forEach(([produit, price]) => {
+                const previousPrice = currentPrices[produit] || price;
+                const priceChange = price - previousPrice;
+                const changeClass = priceChange > 0 ? 'up' : priceChange < 0 ? 'down' : '';
+                const changeIcon = priceChange > 0 ? '↑' : priceChange < 0 ? '↓' : '→';
+                
+                const card = document.createElement('div');
+                card.className = 'price-card';
+                card.innerHTML = `
+                    <h3 class="product-name">${produit}</h3>
+                    <div class="product-price">${price.toFixed(2)}€</div>
+                    <div class="price-change ${changeClass}">
+                        ${changeIcon} ${Math.abs(priceChange).toFixed(2)}€
+                    </div>
+                    <div class="sales">Ventes: ${ventes[produit] || 0}</div>
+                `;
+                grid.appendChild(card);
+                
+                gsap.fromTo(card, 
+                    { opacity: 0, y: 50 }, 
+                    { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
+                );
+
+                if (priceChange !== 0) {
+                    gsap.fromTo(card.querySelector('.price-change'),
+                        { scale: 1.5, opacity: 0 },
+                        { scale: 1, opacity: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" }
+                    );
+                }
+                
+                currentPrices[produit] = price;
+                currentVentes[produit] = ventes[produit] || 0;
+            });
+        }
+
+        function updateRanking(ventes) {
+            const rankingList = document.getElementById('rankingList');
+            const sortedVentes = Object.entries(ventes).sort((a, b) => b[1] - a[1]);
+            const medals = ['🥇', '🥈', '🥉'];
+            
+            rankingList.innerHTML = sortedVentes.slice(0, 3).map(([produit, vente], index) => `
+                <div class="ranking-item">
+                    <span class="ranking-medal">${medals[index]}</span>
+                    <span class="ranking-product">${produit}</span>
+                    <span class="ranking-sales">${vente}</span>
+                </div>
+            `).join('');
+
+            gsap.fromTo(rankingList.children, 
+                { opacity: 0, x: -50 }, 
+                { opacity: 1, x: 0, duration: 0.5, stagger: 0.1, ease: "power2.out" }
+            );
+        }
+
+        function triggerCrash() {
+            const crashMessage = document.getElementById('crashMessage');
+            crashMessage.style.display = 'block';
+            
+            gsap.fromTo(crashMessage, 
+                { scale: 0, rotation: -180, opacity: 0 },
+                { scale: 1, rotation: 0, opacity: 1, duration: 1, ease: "elastic.out(1, 0.3)" }
+            );
+
+            gsap.to(crashMessage, {
+                scale: 1.1,
+                duration: 0.5,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+
+            setTimeout(() => {
+                gsap.to(crashMessage, {
+                    scale: 0,
+                    opacity: 0,
+                    duration: 0.5,
+                    onComplete: () => crashMessage.style.display = 'none'
+                });
+            }, 5000);
+        }
+
+        function updateTotalSpent() {
+            fetch('/api/total_spent')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur serveur');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.total_spent !== undefined && data.total_spent !== null) {
+                    targetTotalSpent = parseFloat(data.total_spent);
+                    if (!animationFrameId) {
+                        animateTotalSpent();
+                    }
+                } else {
+                    console.error('Total dépensé non défini ou invalide');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération du total:', error);
+            });
+        }
+
+        function animateTotalSpent() {
+            const totalSpentElement = document.getElementById('totalSpentValue');
+            const diff = targetTotalSpent - currentTotalSpent;
+            const step = diff / 30;
+
+            if (Math.abs(diff) < 0.01) {
+                currentTotalSpent = targetTotalSpent;
+                totalSpentElement.textContent = currentTotalSpent.toFixed(2);
+                animationFrameId = null;
+                return;
+            }
+
+            currentTotalSpent += step;
+            totalSpentElement.textContent = currentTotalSpent.toFixed(2);
+
+            gsap.to(totalSpentElement, {
+                scale: 1.1,
+                duration: 0.1,
+                yoyo: true,
+                repeat: 1,
+                ease: "power2.inOut"
+            });
+
+            animationFrameId = requestAnimationFrame(animateTotalSpent);
+        }
+
+        socket.on('connect', () => console.log('Websocket connecté!'));
+
+        socket.on('update_prices', data => {
+            requestAnimationFrame(() => {
+                updateChart(data.historique);
+                updatePricesGrid(data.prix, data.ventes);
+                updateRanking(data.ventes);
+            });
+        });
+
+        socket.on('crash_boursier', triggerCrash);
+
+        let lastFetchTime = 0;
+        const FETCH_INTERVAL = 5000; // 5 secondes
+
+        function fetchData() {
+            const now = Date.now();
+            if (now - lastFetchTime < FETCH_INTERVAL) {
+                return;
+            }
+            lastFetchTime = now;
+
+            Promise.all([
+                fetch('/api/historique_prix').then(res => res.json()),
+                fetch('/api/prix').then(res => res.json()),
+                fetch('/api/ventes').then(res => res.json())
+            ]).then(([historiqueData, prixData, ventesData]) => {
+                requestAnimationFrame(() => {
+                    updateChart(historiqueData);
+                    updatePricesGrid(prixData, ventesData);
+                    updateRanking(ventesData);
+                });
+            }).catch(error => console.error('Erreur de récupération des données:', error));
+        }
+
+        function resizeChart() {
+            if (chart) {
+                chart.updateOptions({
+                    chart: {
+                        height: '100%'
+                    }
+                });
+            }
+        }
+
+        // Initialisation
+        initializeChart();
+        fetchData();
+        updateTotalSpent();
+
+        // Optimisation des mises à jour
+        function update() {
+            fetchData();
+            updateTotalSpent();
+            requestAnimationFrame(update);
+        }
+
+        // Démarrage de la boucle d'animation
+        requestAnimationFrame(update);
+
+        // Gestion du redimensionnement
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                resizeChart();
+                updatePricesGrid(currentPrices, currentVentes);
+            }, 250);
+        });
+
+        // Gestion de la visibilité de la page
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                fetchData();
+                updateTotalSpent();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOVA EVENT - Événements Stellaires Extraordinaires</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --primary-color: #00a8ff;
+            --secondary-color: #192a56;
+            --accent-color: #ffa500;
+            --text-color: #ffffff;
+            --background-color: #0c0c0c;
+            --success-color: #4CAF50;
+            --error-color: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background-color: rgba(25, 42, 86, 0.8);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo-container {
+            width: 150px;
+            height: 50px;
+        }
+
+        .logo-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 1.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .menu-toggle {
+            display: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 1;
+            max-width: 800px;
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--primary-color);
+            animation: text-glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes text-glow {
+            from { text-shadow: 0 0 5px var(--primary-color), 0 0 10px var(--primary-color), 0 0 15px var(--primary-color); }
+            to { text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color), 0 0 30px var(--primary-color); }
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: var(--background-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: all 0.5s;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 168, 255, 0.3);
+        }
+
+        .space-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            z-index: -1;
+        }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            background-color: #ffffff;
+            border-radius: 50%;
+            animation: twinkle 5s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.5); }
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: #ffffff;
+            animation: shoot 5s linear infinite;
+        }
+
+        @keyframes shoot {
+            from { transform: translateX(0) translateY(0); opacity: 1; }
+            to { transform: translateX(300px) translateY(300px); opacity: 0; }
+        }
+
+        .constellation {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .constellation-line {
+            stroke: rgba(255, 255, 255, 0.2);
+            stroke-width: 1;
+            stroke-dasharray: 5;
+            animation: dash 20s linear infinite;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: 1000; }
+        }
+
+        .constellation-star {
+            fill: #ffffff;
+            animation: pulse 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); opacity: 1; }
+            to { transform: scale(1.5); opacity: 0.7; }
+        }
+
+        .transition-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, var(--background-color));
+            z-index: 1;
+        }
+
+        .services {
+            padding: 5rem 0;
+            background-color: var(--secondary-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .services::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('/api/placeholder/1200/800') no-repeat center center;
+            background-size: cover;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .services h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary-color);
+            position: relative;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            position: relative;
+        }
+
+        .service-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+        }
+
+        .service-card:hover::before {
+            top: -100%;
+            left: -100%;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 168, 255, 0.2);
+        }
+
+        .service-card i {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover i {
+            transform: scale(1.2);
+            color: var(--primary-color);
+        }
+
+        .service-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .service-card p {
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+
+        .about {
+            padding: 5rem 0;
+            background-color: var(--background-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(0, 168, 255, 0.1));
+            transform: skewX(-20deg);
+            z-index: 0;
+        }
+
+        .about-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .about-text {
+            flex: 1;
+            padding-right: 3rem;
+        }
+
+        .about h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .about p {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .about-image {
+            flex: 1;
+            position: relative;
+        }
+
+        .about-image img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 168, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .about-image:hover img {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 168, 255, 0.5);
+        }
+
+        .portfolio {
+            padding: 5rem 0;
+            background-color: var(--secondary-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portfolio h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary-color);
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .portfolio-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .portfolio-item img {
+            width: 100%;
+            height: auto;
+            transition: transform 0.5s ease;
+        }
+
+        .portfolio-item:hover img {
+            transform: scale(1.1);
+        }
+
+        .portfolio-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .portfolio-item:hover .portfolio-overlay {
+            opacity: 1;
+        }
+
+        .portfolio-overlay h3 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .portfolio-overlay p {
+            color: var(--text-color);
+            text-align: center;
+            padding: 0 1rem;
+        }
+
+        .timeline {
+            padding: 5rem 0;
+            background-color: var(--background-color);
+            position: relative;
+        }
+
+        .timeline h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary-color);
+        }
+
+        .timeline-container {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .timeline-container::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background-color: var(--primary-color);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .timeline-item {
+            padding: 10px 40px;
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            right: -10px;
+            background-color: var(--accent-color);
+            border: 4px solid var(--primary-color);
+            top: 15px;
+            border-radius: 50%;
+            z-index: 1;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .timeline-left {
+            left: 0;
+        }
+
+        .timeline-right {
+            left: 50%;
+        }
+
+        .timeline-right::after {
+            left: -10px;
+        }
+
+        .timeline-content {
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            position: relative;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-content:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 168, 255, 0.3);
+        }
+
+        .timeline-content h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .testimonials {
+            padding: 5rem 0;
+            background-color: var(--secondary-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .testimonials::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 100px;
+            height: 100px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0.1;
+        }
+
+        .testimonials::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            opacity: 0.1;
+        }
+
+        .testimonials h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary-color);
+            position: relative;
+        }
+
+        .testimonial-slider {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .testimonial-slide {
+            text-align: center;
+            padding: 0 50px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease;
+        }
+
+        .testimonial-slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .testimonial-slide p {
+            font-size: 1.1rem;
+            font-style: italic;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .testimonial-slide p::before,
+        .testimonial-slide p::after {
+            content: '"';
+            font-size: 3rem;
+            color: var(--primary-color);
+            opacity: 0.3;
+            position: absolute;
+        }
+
+        .testimonial-slide p::before {
+            top: -20px;
+            left: -20px;
+        }
+
+        .testimonial-slide p::after {
+            bottom: -40px;
+            right: -20px;
+        }
+
+        .testimonial-author {
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .slider-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .slider-nav:hover {
+            color: var(--accent-color);
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        .slider-prev {
+            left: 0;
+        }
+
+        .slider-next {
+            right: 0;
+        }
+
+        .contact {
+            padding: 5rem 0;
+            background-color: var(--background-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('/api/placeholder/1200/800') no-repeat center center;
+            background-size: cover;
+            opacity: 0.05;
+            z-index: 0;
+        }
+
+        .contact h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary-color);
+            position: relative;
+        }
+
+        .contact-form {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .form-group textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        .submit-button {
+            background-color: var(--accent-color);
+            color: var(--background-color);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: all 0.5s;
+        }
+
+        .submit-button:hover::before {
+            left: 100%;
+        }
+
+        .submit-button:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 168, 255, 0.3);
+        }
+
+        footer {
+            background-color: var(--secondary-color);
+            padding: 3rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 100px;
+            height: 100px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0.1;
+        }
+
+        footer::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            opacity: 0.1;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .footer-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links li {
+            margin-right: 1.5rem;
+        }
+
+        .footer-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .social-icons {
+            display: flex;
+        }
+
+        .social-icons a {
+            color: var(--text-color);
+            font-size: 1.5rem;
+            margin-left: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-icons a:hover {
+            color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .newsletter {
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        .newsletter h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .newsletter-form {
+            display: flex;
+        }
+
+        .newsletter-form input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border-radius: 5px 0 0 5px;
+        }
+
+        .newsletter-form button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--accent-color);
+            color: var(--background-color);
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .newsletter-form button:hover {
+            background-color: var(--primary-color);
+        }
+
+        /* Optimisations pour mobile */
+        @media screen and (max-width: 768px) {
+            html {
+                font-size: 14px;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: var(--secondary-color);
+                flex-direction: column;
+                align-items: center;
+                padding: 1rem 0;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links li {
+                margin: 0.5rem 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .about-content {
+                flex-direction: column;
+            }
+
+            .about-text {
+                padding-right: 0;
+                margin-bottom: 2rem;
+            }
+
+            .timeline-container::after {
+                left: 31px;
+            }
+
+            .timeline-item {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+            }
+
+            .timeline-item::after {
+                left: 21px;
+            }
+
+            .timeline-right {
+                left: 0;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .footer-logo, .footer-links, .social-icons {
+                margin-bottom: 1rem;
+            }
+
+            .footer-links {
+                justify-content: center;
+            }
+
+            .newsletter-form {
+                flex-direction: column;
+            }
+
+            .newsletter-form input, .newsletter-form button {
+                width: 100%;
+                border-radius: 5px;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        /* Animations avancées */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .rotate-animation {
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-5px, 5px); }
+            40% { transform: translate(-5px, -5px); }
+            60% { transform: translate(5px, 5px); }
+            80% { transform: translate(5px, -5px); }
+            100% { transform: translate(0); }
+        }
+
+        .glitch-animation {
+            animation: glitch 0.5s cubic-bezier(.25, .46, .45, .94) both infinite;
+        }
+
+        /* Styles pour le modal du portfolio */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            margin: 5% auto;
+            padding: 2rem;
+            width: 80%;
+            max-width: 700px;
+            background-color: var(--background-color);
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 168, 255, 0.3);
+            transform: scale(0.7);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .close {
+            color: var(--text-color);
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            color: var(--primary-color);
+            transform: rotate(90deg);
+        }
+
+        .modal-image {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .modal-description h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .modal-description p {
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Styles pour le bouton de retour en haut */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--accent-color);
+            color: var(--background-color);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+            z-index: 999;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+        }
+
+        .back-to-top:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-5px);
+        }
+
+        /* Styles pour le logo SVG interactif */
+        .logo-svg {
+            width: 150px;
+            height: 50px;
+        }
+
+        .logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            fill: var(--primary-color);
+        }
+
+        .logo-orbit {
+            fill: none;
+            stroke: var(--accent-color);
+            stroke-width: 2;
+            stroke-dasharray: 150;
+            stroke-dashoffset: 150;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .logo-planet {
+            fill: var(--accent-color);
+            transform-origin: center;
+            transition: transform 0.5s ease;
+        }
+
+        .logo-container:hover .logo-orbit {
+            stroke-dashoffset: 0;
+        }
+
+        .logo-container:hover .logo-planet {
+            transform: scale(1.2);
+        }
+
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo-container">
+                <svg class="logo-svg" viewBox="0 0 150 50">
+                    <defs>
+                        <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:var(--primary-color);stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:var(--accent-color);stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <text x="5" y="35" class="logo-text">NOVA</text>
+                    <ellipse cx="120" cy="25" rx="20" ry="10" class="logo-orbit" />
+                    <circle cx="140" cy="25" r="5" class="logo-planet" />
+                </svg>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Accueil</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#about">À propos</a></li>
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#testimonials">Témoignages</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="space-background"></div>
+            <div class="stars"></div>
+            <svg class="constellation" width="100%" height="100%" viewBox="0 0 1000 1000">
+                <!-- Constellation lines and stars will be dynamically added here -->
+            </svg>
+            <div class="hero-content animate-fadeIn">
+                <h1 class="glitch-animation">NOVA EVENT</h1>
+                <p>Créez des événements stellaires qui transcendent l'ordinaire</p>
+                <a href="#contact" class="cta-button">Lancez votre projet</a>
+            </div>
+            <div class="transition-overlay"></div>
+        </section>
+
+        <section id="services" class="services">
+            <div class="container">
+                <h2 class="animate-slideInLeft">Nos Services Galactiques</h2>
+                <div class="services-grid">
+                    <div class="service-card animate-zoomIn">
+                        <i class="fas fa-rocket float-animation"></i>
+                        <h3>Lancement d'Événements</h3>
+                        <p>Propulsez votre événement vers de nouveaux horizons avec notre expertise en planification et exécution.</p>
+                    </div>
+                    <div class="service-card animate-zoomIn">
+                        <i class="fas fa-star float-animation"></i>
+                        <h3>Décoration Stellaire</h3>
+                        <p>Transformez votre espace en un univers éblouissant avec nos décorations inspirées de l'espace.</p>
+                    </div>
+                    <div class="service-card animate-zoomIn">
+                        <i class="fas fa-users float-animation"></i>
+                        <h3>Gestion des Invités</h3>
+                        <p>Assurez une expérience fluide pour vos invités, de l'invitation à l'atterrissage en douceur.</p>
+                    </div>
+                    <div class="service-card animate-zoomIn">
+                        <i class="fas fa-microphone-alt float-animation"></i>
+                        <h3>Divertissement Cosmique</h3>
+                        <p>Offrez un spectacle hors de ce monde avec notre sélection d'artistes et d'animations.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about">
+            <div class="container">
+                <div class="about-content">
+                    <div class="about-text animate-slideInLeft">
+                        <h2>À Propos de NOVA EVENT</h2>
+                        <p>Chez NOVA EVENT, nous croyons que chaque événement devrait être une aventure extraordinaire. Fondée par des passionnés de l'espace et des experts en événementiel, notre mission est de créer des expériences uniques qui transportent vos invités au-delà des étoiles.</p>
+                        <p>Avec une équipe dévouée d'innovateurs créatifs et de professionnels chevronnés, nous transformons vos idées les plus audacieuses en réalités époustouflantes. Que ce soit pour un lancement de produit futuriste, un gala intergalactique ou une conférence sur l'avenir, NOVA EVENT est votre partenaire pour des événements qui défient l'imagination.</p>
+                    </div>
+                    <div class="about-image animate-slideInRight">
+                        <img src="static/eagle.png" alt="L'équipe NOVA EVENT en action" class="float-animation">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="portfolio" class="portfolio">
+            <div class="container">
+                <h2 class="animate-fadeIn">Notre Galaxie d'Événements</h2>
+                <div class="portfolio-grid">
+                    <div class="portfolio-item fade-in">
+                        <img src="static/eagle.png" alt="Gala Intergalactique">
+                        <div class="portfolio-overlay">
+                            <h3>Gala Intergalactique</h3>
+                            <p>Un événement de charité à thème spatial qui a récolté des fonds pour la recherche astronomique.</p>
+                        </div>
+                    </div>
+                    <div class="portfolio-item fade-in">
+                        <img src="static/eagle.png" alt="Lancement de Produit Futuriste">
+                        <div class="portfolio-overlay">
+                            <h3>Lancement de Produit Futuriste</h3>
+                            <p>Présentation innovante d'une nouvelle technologie avec des hologrammes et des effets spéciaux.</p>
+                        </div>
+                    </div>
+                    <div class="portfolio-item fade-in">
+                        <img src="static/eagle.png" alt="Conférence sur l'Avenir">
+                        <div class="portfolio-overlay">
+                            <h3>Conférence sur l'Avenir</h3>
+                            <p>Rassemblement de leaders d'opinion pour discuter des technologies émergentes et de l'exploration spatiale.</p>
+                        </div>
+                    </div>
+                    <div class="portfolio-item fade-in">
+                        <img src="static/eagle.png" alt="Festival de Science-Fiction">
+                        <div class="portfolio-overlay">
+                            <h3>Festival de Science-Fiction</h3>
+                            <p>Célébration immersive de la culture geek avec des décors élaborés et des expériences interactives.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="timeline" class="timeline">
+            <div class="container">
+                <h2 class="animate-fadeIn">Notre Voyage Cosmique</h2>
+                <div class="timeline-container">
+                    <div class="timeline-item timeline-left fade-in">
+                        <div class="timeline-content">
+                            <h3>2018 - Le Décollage</h3>
+                            <p>Fondation de NOVA EVENT avec notre premier événement spatial pour une start-up tech.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item timeline-right fade-in">
+                        <div class="timeline-content">
+                            <h3>2019 - Expansion Galactique</h3>
+                            <p>Ouverture de notre premier bureau et constitution de notre équipe d'experts en événementiel.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item timeline-left fade-in">
+                        <div class="timeline-content">
+                            <h3>2020 - Innovation Virtuelle</h3>
+                            <p>Lancement de notre plateforme d'événements virtuels en réponse aux défis mondiaux.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item timeline-right fade-in">
+                        <div class="timeline-content">
+                            <h3>2021 - Reconnaissance Stellaire</h3>
+                            <p>Récompensés comme "Meilleure Agence Événementielle Innovante" aux Event Tech Awards.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item timeline-left fade-in">
+                        <div class="timeline-content">
+                            <h3>2022 - Expansion Interstellaire</h3>
+                            <p>Ouverture de bureaux internationaux et lancement de notre programme de formation en événementiel spatial.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonials" class="testimonials">
+            <div class="container">
+                <h2 class="animate-fadeIn">Ce Que Disent Nos Explorateurs</h2>
+                <div class="testimonial-slider">
+                    <div class="testimonial-slide active">
+                        <p>"NOVA EVENT a transformé notre conférence annuelle en une odyssée inoubliable. Leur attention aux détails et leur créativité ont dépassé toutes nos attentes!"</p>
+                        <div class="testimonial-author">Marie L., CEO de TechFuture</div>
+                    </div>
+                    <div class="testimonial-slide">
+                        <p>"Travailler avec l'équipe de NOVA EVENT a été une expérience stellaire. Ils ont donné vie à notre vision d'une manière que nous n'aurions jamais imaginée possible."</p>
+                        <div class="testimonial-author">Thomas D., Directeur Marketing chez InnovCorp</div>
+                    </div>
+                    <div class="testimonial-slide">
+                        <p>"De la conception à l'exécution, NOVA EVENT a livré un événement qui a littéralement laissé nos invités bouche bée. Un grand merci pour cette expérience exceptionnelle!"</p>
+                        <div class="testimonial-author">Sophie B., Organisatrice du Gala des Étoiles</div>
+                    </div>
+                    <div class="slider-nav slider-prev"><i class="fas fa-chevron-left"></i></div>
+                    <div class="slider-nav slider-next"><i class="fas fa-chevron-right"></i></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="contact">
+            <div class="container">
+                <h2 class="animate-fadeIn">Contactez-nous pour Lancer Votre Projet Stellaire</h2>
+                <form class="contact-form animate-zoomIn">
+                    <div class="form-group">
+                        <label for="name">Nom</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-button">Envoyer</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">NOVA EVENT</div>
+                <ul class="footer-links">
+                    <li><a href="#home">Accueil</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#about">À propos</a></li>
+                    <li><a href="#portfolio">Portfolio</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="newsletter">
+                <h3>Restez informé de nos dernières nouvelles</h3>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Votre adresse email" required>
+                    <button type="submit">S'abonner</button>
+                </form>
+            </div>
+        </div>
+    </footer>
+
+    <div id="portfolioModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img class="modal-image" src="" alt="Portfolio Item">
+            <div class="modal-description">
+                <h3></h3>
+                <p></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="back-to-top">
+        <i class="fas fa-chevron-up"></i>
+    </div>
+
+    <script>
+        // Création dynamique des étoiles
+        function createStars() {
+            const starsContainer = document.querySelector('.stars');
+            const numStars = 200;
+
+            for (let i = 0; i < numStars; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                star.style.width = `${Math.random() * 3}px`;
+                star.style.height = star.style.width;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Création des étoiles filantes
+        function createShootingStars() {
+            const starsContainer = document.querySelector('.stars');
+            const numShootingStars = 5;
+
+            for (let i = 0; i < numShootingStars; i++) {
+                const shootingStar = document.createElement('div');
+                shootingStar.classList.add('shooting-star');
+                shootingStar.style.left = `${Math.random() * 100}%`;
+                shootingStar.style.top = `${Math.random() * 50}%`;
+                shootingStar.style.animationDelay = `${Math.random() * 5}s`;
+                starsContainer.appendChild(shootingStar);
+            }
+        }
+
+        // Création dynamique de la constellation
+        function createConstellation() {
+            const svg = document.querySelector('.constellation');
+            const numStars = 10;
+            const stars = [];
+
+            for (let i = 0; i < numStars; i++) {
+                const star = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                const x = Math.random() * 1000;
+                const y = Math.random() * 1000;
+                star.setAttribute('cx', x);
+                star.setAttribute('cy', y);
+                star.setAttribute('r', 2);
+                star.setAttribute('class', 'constellation-star');
+                svg.appendChild(star);
+                stars.push({ x, y });
+            }
+
+            for (let i = 0; i < stars.length - 1; i++) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', stars[i].x);
+                line.setAttribute('y1', stars[i].y);
+                line.setAttribute('x2', stars[i + 1].x);
+                line.setAttribute('y2', stars[i + 1].y);
+                line.setAttribute('class', 'constellation-line');
+                svg.appendChild(line);
+            }
+        }
+
+        // Animation du header au scroll
+        function handleScroll() {
+            const header = document.querySelector('header');
+            const backToTop = document.querySelector('.back-to-top');
+            if (window.scrollY > 50) {
+                header.style.background = 'rgba(25, 42, 86, 0.9)';
+                backToTop.classList.add('visible');
+            } else {
+                header.style.background = 'rgba(25, 42, 86, 0.8)';
+                backToTop.classList.remove('visible');
+            }
+        }
+
+        // Gestion du slider de témoignages
+        function initTestimonialSlider() {
+            const slides = document.querySelectorAll('.testimonial-slide');
+            const prevBtn = document.querySelector('.slider-prev');
+            const nextBtn = document.querySelector('.slider-next');
+            let currentSlide = 0;
+
+            function showSlide(index) {
+                slides.forEach((slide, i) => {
+                    slide.classList.remove('active');
+                    if (i === index) {
+                        slide.classList.add('active');
+                    }
+                });
+            }
+
+            prevBtn.addEventListener('click', () => {
+                currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+                showSlide(currentSlide);
+            });
+
+            nextBtn.addEventListener('click', () => {
+                currentSlide = (currentSlide + 1) % slides.length;
+                showSlide(currentSlide);
+            });
+
+            // Auto-play
+            setInterval(() => {
+                currentSlide = (currentSlide + 1) % slides.length;
+                showSlide(currentSlide);
+            }, 5000);
+        }
+
+        // Animation au défilement
+        function handleScrollAnimation() {
+            const elements = document.querySelectorAll('.fade-in');
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementBottom = element.getBoundingClientRect().bottom;
+                if (elementTop < window.innerHeight && elementBottom > 0) {
+                    element.classList.add('visible');
+                }
+            });
+        }
+
+        // Gestion du modal pour le portfolio
+        function initPortfolioModal() {
+            const modal = document.getElementById('portfolioModal');
+            const portfolioItems = document.querySelectorAll('.portfolio-item');
+            const closeBtn = document.querySelector('.close');
+
+            portfolioItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const img = item.querySelector('img');
+                    const title = item.querySelector('h3').textContent;
+                    const description = item.querySelector('p').textContent;
+
+                    modal.querySelector('.modal-image').src = img.src;
+                    modal.querySelector('h3').textContent = title;
+                    modal.querySelector('p').textContent = description;
+
+                    modal.classList.add('active');
+                });
+            });
+
+            closeBtn.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        }
+
+        // Défilement fluide pour les liens de navigation
+        function initSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        }
+
+        // Gestion du bouton de retour en haut
+        function initBackToTop() {
+            const backToTop = document.querySelector('.back-to-top');
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
+        // Animation des chiffres
+        function animateNumbers() {
+            const numberElements = document.querySelectorAll('.animate-number');
+            numberElements.forEach(element => {
+                const target = parseInt(element.getAttribute('data-target'));
+                let current = 0;
+                const increment = target / 100;
+                const timer = setInterval(() => {
+                    current += increment;
+                    element.textContent = Math.round(current);
+                    if (current >= target) {
+                        element.textContent = target;
+                        clearInterval(timer);
+                    }
+                }, 20);
+            });
+        }
+
+        // Validation du formulaire de contact
+        function initContactForm() {
+            const form = document.querySelector('.contact-form');
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                // Ici, vous pouvez ajouter la logique d'envoi du formulaire
+                alert('Merci pour votre message ! Nous vous contacterons bientôt.');
+                form.reset();
+            });
+        }
+
+        // Animation du logo
+        function animateLogo() {
+            const logo = document.querySelector('.logo-svg');
+            logo.addEventListener('mouseover', () => {
+                logo.querySelector('.logo-orbit').style.strokeDashoffset = '0';
+                logo.querySelector('.logo-planet').style.transform = 'scale(1.2)';
+            });
+            logo.addEventListener('mouseout', () => {
+                logo.querySelector('.logo-orbit').style.strokeDashoffset = '150';
+                logo.querySelector('.logo-planet').style.transform = 'scale(1)';
+            });
+        }
+
+        // Parallax effect
+        function initParallax() {
+            window.addEventListener('scroll', () => {
+                const parallaxElements = document.querySelectorAll('.parallax');
+                parallaxElements.forEach(element => {
+                    const speed = element.getAttribute('data-speed');
+                    element.style.transform = `translateY(${window.scrollY * speed}px)`;
+                });
+            });
+        }
+
+        // Menu mobile
+        function initMobileMenu() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navLinks = document.querySelector('.nav-links');
+
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            createShootingStars();
+            createConstellation();
+            initTestimonialSlider();
+            initPortfolioModal();
+            initSmoothScroll();
+            initBackToTop();
+            animateNumbers();
+            initContactForm();
+            animateLogo();
+            initParallax();
+            initMobileMenu();
+
+            window.addEventListener('scroll', () => {
+                handleScroll();
+                handleScrollAnimation();
+            });
+
+            // Appel initial pour les animations au chargement de la page
+            handleScrollAnimation();
+        });
+
+        // Easter egg
+        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        let konamiIndex = 0;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === konamiCode[konamiIndex]) {
+                konamiIndex++;
+                if (konamiIndex === konamiCode.length) {
+                    activateEasterEgg();
+                    konamiIndex = 0;
+                }
+            } else {
+                konamiIndex = 0;
+            }
+        });
+
+        function activateEasterEgg() {
+            document.body.style.transform = 'rotate(180deg)';
+            setTimeout(() => {
+                document.body.style.transform = 'none';
+                alert('Vous avez découvert notre code secret ! Bienvenue dans l\'équipe NOVA EVENT !');
+            }, 1000);
+        }
+
+        // Effet de parallaxe avancé pour le fond étoilé
+        function advancedParallax() {
+            const stars = document.querySelectorAll('.star');
+            const constellation = document.querySelector('.constellation');
+            
+            window.addEventListener('mousemove', (e) => {
+                const mouseX = e.clientX / window.innerWidth;
+                const mouseY = e.clientY / window.innerHeight;
+
+                stars.forEach(star => {
+                    const speed = parseFloat(star.getAttribute('data-speed') || Math.random() * 0.1);
+                    const x = (window.innerWidth - e.pageX * speed) / 100;
+                    const y = (window.innerHeight - e.pageY * speed) / 100;
+                    star.style.transform = `translate(${x}px, ${y}px)`;
+                });
+
+                constellation.style.transform = `translate(${mouseX * 20}px, ${mouseY * 20}px)`;
+            });
+        }
+
+        // Animation de texte dynamique pour le titre principal
+        function initDynamicText() {
+            const title = document.querySelector('.hero h1');
+            const text = title.textContent;
+            title.textContent = '';
+
+            for (let i = 0; i < text.length; i++) {
+                const span = document.createElement('span');
+                span.textContent = text[i];
+                span.style.animationDelay = `${i * 0.1}s`;
+                title.appendChild(span);
+            }
+        }
+
+        // Effet de distorsion au survol pour les cartes de service
+        function initServiceCardEffect() {
+            const cards = document.querySelectorAll('.service-card');
+
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    card.style.setProperty('--x', `${x}px`);
+                    card.style.setProperty('--y', `${y}px`);
+                });
+            });
+        }
+
+        // Animation de la timeline
+        function animateTimeline() {
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate');
+                    } else {
+                        entry.target.classList.remove('animate');
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            timelineItems.forEach(item => {
+                observer.observe(item);
+            });
+        }
+
+        // Effet de particules pour le fond
+        function createParticleEffect() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            document.body.appendChild(canvas);
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 5 + 1;
+                    this.speedX = Math.random() * 3 - 1.5;
+                    this.speedY = Math.random() * 3 - 1.5;
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+
+                    if (this.size > 0.2) this.size -= 0.1;
+                }
+
+                draw() {
+                    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            function handleParticles() {
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+
+                    if (particles[i].size <= 0.2) {
+                        particles.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (particles.length < 100) {
+                    particles.push(new Particle());
+                }
+                handleParticles();
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        // Effet de distorsion au défilement
+        function initScrollDistortion() {
+            const sections = document.querySelectorAll('section');
+            let currentSection = 0;
+
+            window.addEventListener('scroll', () => {
+                const scrollPosition = window.scrollY;
+                sections.forEach((section, index) => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+
+                    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                        if (currentSection !== index) {
+                            currentSection = index;
+                            section.style.animation = 'distort 0.5s ease-out';
+                            setTimeout(() => {
+                                section.style.animation = '';
+                            }, 500);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Animation des icônes de service
+        function animateServiceIcons() {
+            const icons = document.querySelectorAll('.service-card i');
+            icons.forEach(icon => {
+                icon.addEventListener('mouseover', () => {
+                    icon.style.animation = 'pulse 0.5s infinite alternate';
+                });
+                icon.addEventListener('mouseout', () => {
+                    icon.style.animation = '';
+                });
+            });
+        }
+
+        // Effet de hover 3D pour les cartes de portfolio
+        function init3DEffect() {
+            const cards = document.querySelectorAll('.portfolio-item');
+
+            cards.forEach(card => {
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    const angleY = (x - centerX) / 8;
+                    const angleX = (centerY - y) / 8;
+
+                    card.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) scale3d(1.05, 1.05, 1.05)`;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = '';
+                });
+            });
+        }
+
+        // Effet de texte flottant pour les témoignages
+        function floatingTestimonials() {
+            const testimonials = document.querySelectorAll('.testimonial-slide p');
+            testimonials.forEach(testimonial => {
+                testimonial.innerHTML = testimonial.innerHTML.split(' ').map(word => `<span>${word}</span>`).join(' ');
+                const words = testimonial.querySelectorAll('span');
+                words.forEach((word, index) => {
+                    word.style.animationDelay = `${index * 0.1}s`;
+                });
+            });
+        }
+
+        // Animation de chargement de page
+        function pageLoadAnimation() {
+            const loader = document.createElement('div');
+            loader.classList.add('page-loader');
+            loader.innerHTML = '<div class="loader-content"><div class="spinner"></div><p>Chargement de l\'expérience cosmique...</p></div>';
+            document.body.appendChild(loader);
+
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    loader.style.opacity = '0';
+                    setTimeout(() => {
+                        loader.remove();
+                    }, 500);
+                }, 1000);
+            });
+        }
+
+        // Effet de parallaxe pour les images de fond
+        function parallaxBackgrounds() {
+            const parallaxElements = document.querySelectorAll('.parallax-bg');
+            window.addEventListener('scroll', () => {
+                const scrollY = window.scrollY;
+                parallaxElements.forEach(element => {
+                    const speed = element.dataset.speed || 0.5;
+                    element.style.transform = `translateY(${scrollY * speed}px)`;
+                });
+            });
+        }
+
+        // Animation des statistiques
+        function animateStats() {
+            const stats = document.querySelectorAll('.stat-number');
+            const observerOptions = {
+                threshold: 0.5,
+                rootMargin: "0px 0px -100px 0px"
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const target = parseInt(entry.target.getAttribute('data-target'));
+                        let count = 0;
+                        const updateCount = () => {
+                            const increment = target / 200;
+                            if (count < target) {
+                                count += increment;
+                                entry.target.innerText = Math.ceil(count);
+                                requestAnimationFrame(updateCount);
+                            } else {
+                                entry.target.innerText = target;
+                            }
+                        };
+                        updateCount();
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            stats.forEach(stat => {
+                observer.observe(stat);
+            });
+        }
+
+        // Initialisation de toutes les nouvelles fonctionnalités
+        function initAllNewFeatures() {
+            advancedParallax();
+            initDynamicText();
+            initServiceCardEffect();
+            animateTimeline();
+            createParticleEffect();
+            initScrollDistortion();
+            animateServiceIcons();
+            init3DEffect();
+            floatingTestimonials();
+            pageLoadAnimation();
+            parallaxBackgrounds();
+            animateStats();
+        }
+
+        // Ajout de l'initialisation des nouvelles fonctionnalités à l'événement DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // ... (fonctions d'initialisation précédentes)
+            initAllNewFeatures();
+        });
+
+    </script>
+</body>
+</html>
