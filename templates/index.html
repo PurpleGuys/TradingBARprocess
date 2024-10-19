@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDHEC Investment Club Trading Bar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #003366;
+            --secondary-color: #00a8ff;
+            --background-color: #121212;
+            --card-background: #1e1e1e;
+            --text-color: #ffffff;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        header {
+            background-color: rgba(0, 51, 102, 0.8);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+        .logo {
+            width: 150px;
+            height: auto;
+            transition: all 0.3s ease;
+        }
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0;
+        }
+        nav ul li {
+            margin-left: 20px;
+        }
+        nav ul li a {
+            color: var(--text-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 5px 0;
+        }
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--secondary-color);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        nav ul li a:hover::after {
+            transform: scaleX(1);
+        }
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding-top: 900px; /* Ajusté pour laisser de l'espace pour le header */
+            position: relative;
+            z-index: 1;
+        }
+        h1 {
+            color: var(--secondary-color);
+            text-align: center;
+            font-size: 2.5em;
+            margin: 20px 0;
+            padding-top : 150px;
+            opacity: 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            padding: 20px 0;
+        }
+        .card {
+            background: var(--card-background);
+            padding-top: 200px; 
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(50px);
+            position: relative;
+            z-index: 2;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 6px 30px rgba(0,168,255,0.3);
+        }
+        .card h2 {
+            color: var(--secondary-color);
+            margin-top: 0;
+        }
+        .card a {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: var(--secondary-color);
+            color: var(--background-color);
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .card a:hover {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+        }
+        footer {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            text-align: center;
+            padding: 20px 0;
+            margin-top: auto;
+        }
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+            }
+            nav ul {
+                margin-top: 20px;
+            }
+            nav ul li {
+                margin: 10px;
+            }
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            main {
+                padding-top: 140px; /* Ajusté pour le header en mode mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="EDHEC Trading Bar Logo" class="logo">
+        </div>
+    </header>
+
+    <div id="particles-js"></div>
+
+    <main class="container">
+        <h1>EDHEC Investment Club Trading Bar</h1>
+        <div class="grid">
+            <div class="card">
+                <h2>Acheter</h2>
+                <p>Passez vos ordres d'achat sur le marché virtuel.</p>
+                <a href="{{ url_for('page_acheter') }}">Accéder</a>
+            </div>
+            <div class="card">
+                <h2>Prix actuels</h2>
+                <p>Consultez les prix en temps réel de tous les produits.</p>
+                <a href="{{ url_for('afficher_prix') }}">Voir les prix</a>
+            </div>
+            <div class="card">
+                <h2>Graphiques</h2>
+                <p>Analysez les tendances du marché avec nos graphiques interactifs.</p>
+                <a href="{{ url_for('graphique') }}">Voir les graphiques</a>
+            </div>
+            <div class="card">
+                <h2>Jeu Concours</h2>
+                <p>Participez à notre jeu concours et tentez de gagner !</p>
+                <a href="{{ url_for('jeu_concours') }}">Participer</a>
+            </div>
+            {% if session.get('role') == 'admin' %}
+            <div class="card">
+                <h2>Administration</h2>
+                <p>Accédez aux fonctionnalités d'administration.</p>
+                <a href="{{ url_for('page_admin') }}">Gérer</a>
+            </div>
+            <div class="card">
+                <h2>Management</h2>
+                <p>Gérez les produits et les paramètres du système.</p>
+                <a href="{{ url_for('page_management') }}">Accéder</a>
+            </div>
+            <div class="card">
+                <h2>Logs</h2>
+                <p>Consultez les journaux d'activité du système.</p>
+                <a href="{{ url_for('page_logs') }}">Voir les logs</a>
+            </div>
+            <div class="card">
+                <h2>Services</h2>
+                <p>Vérifiez l'état des services en cours d'exécution.</p>
+                <a href="{{ url_for('page_running_services') }}">Vérifier</a>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 EDHEC Investment Club Trading Bar. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animation du header au scroll
+        ScrollTrigger.create({
+            start: 'top -80',
+            end: 99999,
+            toggleClass: {className: 'smaller', targets: 'header'}
+        });
+
+        // Animation du titre
+        gsap.to('h1', {
+            opacity: 1,
+            duration: 1,
+            y: 0,
+            ease: 'power3.out'
+        });
+
+        // Animation des cartes
+        gsap.to('.card', {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            stagger: 0.2,
+            ease: 'power3.out',
+            scrollTrigger: {
+                trigger: '.grid',
+                start: 'top 80%'
+            }
+        });
+
+        // Configuration des particules
+        particlesJS("particles-js", {
+            "particles": {
+                "number": {
+                    "value": 80,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#00a8ff"
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    },
+                    "polygon": {
+                        "nb_sides": 5
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false,
+                    "anim": {
+                        "enable": false,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 40,
+                        "size_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#00a8ff",
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 6,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": {
+                        "enable": false,
+                        "rotateX": 600,
+                        "rotateY": 1200
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "repulse"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": {
+                        "distance": 400,
+                        "line_linked": {
+                            "opacity": 1
+                        }
+                    },
+                    "bubble": {
+                        "distance": 400,
+                        "size": 40,
+                        "duration": 2,
+                        "opacity": 8,
+                        "speed": 3
+                    },
+                    "repulse": {
+                        "distance": 200,
+                        "duration": 0.4
+                    },
+                    "push": {
+                        "particles_nb": 4
+                    },
+                    "remove": {
+                        "particles_nb": 2
+                    }
+                }
+            },
+            "retina_detect": true
+        });
+    </script>
+</body>
+</html>
